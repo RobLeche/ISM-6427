@@ -59,7 +59,6 @@ function render(name, data) {
   const { current, hourly, daily } = data;
   const now = describe(current.weather_code, current.is_day);
 
-  document.querySelector(".bg").classList.toggle("night", !current.is_day);
   $("place").textContent = name;
   $("temp").textContent = `${Math.round(current.temperature_2m)}°`;
   $("condition").textContent = now.label;
@@ -127,4 +126,24 @@ $("search").addEventListener("submit", async (e) => {
   }
 });
 
+function setTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  document.querySelectorAll("[data-theme-choice]").forEach((btn) => {
+    btn.setAttribute("aria-pressed", btn.dataset.themeChoice === theme);
+  });
+  try { localStorage.setItem("theme", theme); } catch {}
+}
+
+document.querySelectorAll("[data-theme-choice]").forEach((btn) => {
+  btn.addEventListener("click", () => setTheme(btn.dataset.themeChoice));
+});
+
+function greet() {
+  const hour = new Date().getHours();
+  const part = hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
+  $("greeting").textContent = `Good ${part}, Rob`;
+}
+
+setTheme(document.documentElement.dataset.theme || "system");
+greet();
 loadWeather(DEFAULT_LOCATION);
