@@ -16,6 +16,7 @@
     radial-gradient(circle at 80% 30%, #b8ccff 0%, transparent 45%),
     radial-gradient(circle at 50% 90%, #aef0f4 0%, transparent 45%),
     linear-gradient(160deg, #e8f0ff, #cfe0ff);
+  --fx-rgb: 70, 100, 150;
   color-scheme: light;
 }
 
@@ -34,6 +35,7 @@
     radial-gradient(circle at 20% 20%, #4b3f8f 0%, transparent 40%),
     radial-gradient(circle at 80% 30%, #1f4e79 0%, transparent 45%),
     linear-gradient(160deg, #0f2027, #203a43, #2c5364);
+  --fx-rgb: 255, 255, 255;
   color-scheme: dark;
 }
 
@@ -53,7 +55,8 @@
       radial-gradient(circle at 20% 20%, #4b3f8f 0%, transparent 40%),
       radial-gradient(circle at 80% 30%, #1f4e79 0%, transparent 45%),
       linear-gradient(160deg, #0f2027, #203a43, #2c5364);
-    color-scheme: dark;
+    --fx-rgb: 255, 255, 255;
+  color-scheme: dark;
   }
 }
 
@@ -69,6 +72,15 @@ body {
   inset: 0;
   z-index: -1;
   background: var(--bg);
+}
+
+#fx {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
 }
 
 .app {

@@ -42,7 +42,7 @@ async function loadWeather({ name, latitude, longitude }) {
     temperature_unit: "fahrenheit",
     wind_speed_unit: "mph",
     timezone: "auto",
-    forecast_days: 7,
+    forecast_days: 5,
   });
 
   try {
@@ -59,6 +59,7 @@ function render(name, data) {
   const { current, hourly, daily } = data;
   const now = describe(current.weather_code, current.is_day);
 
+  WeatherFX.set(current.weather_code, current.is_day);
   $("place").textContent = name;
   $("temp").textContent = `${Math.round(current.temperature_2m)}°`;
   $("condition").textContent = now.label;
