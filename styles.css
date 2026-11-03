@@ -17,6 +17,7 @@
     radial-gradient(circle at 50% 90%, #aef0f4 0%, transparent 45%),
     linear-gradient(160deg, #e8f0ff, #cfe0ff);
   --fx-rgb: 70, 100, 150;
+  --fx-cloud-alpha: 0.9;
   color-scheme: light;
 }
 
@@ -36,6 +37,7 @@
     radial-gradient(circle at 80% 30%, #1f4e79 0%, transparent 45%),
     linear-gradient(160deg, #0f2027, #203a43, #2c5364);
   --fx-rgb: 255, 255, 255;
+  --fx-cloud-alpha: 0.4;
   color-scheme: dark;
 }
 
@@ -56,7 +58,8 @@
       radial-gradient(circle at 80% 30%, #1f4e79 0%, transparent 45%),
       linear-gradient(160deg, #0f2027, #203a43, #2c5364);
     --fx-rgb: 255, 255, 255;
-  color-scheme: dark;
+    --fx-cloud-alpha: 0.4;
+    color-scheme: dark;
   }
 }
 
@@ -74,7 +77,8 @@ body {
   background: var(--bg);
 }
 
-#fx {
+#fx,
+#windshield {
   position: fixed;
   inset: 0;
   width: 100%;
@@ -82,6 +86,8 @@ body {
   z-index: -1;
   pointer-events: none;
 }
+/* Windshield droplets sit in front of the cards */
+#windshield { z-index: 10; }
 
 .app {
   max-width: 480px;
