@@ -100,7 +100,8 @@ const WeatherFX = (() => {
     if (SCENES.includes(forced)) return forced;
     if (code >= 95) return "storm";
     if ((code >= 71 && code <= 77) || code === 85 || code === 86) return "snow";
-    if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return code <= 55 ? "drizzle" : "rain";
+    // Drizzle gets the full windshield rain too (?weather=drizzle still previews the lighter version)
+    if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return "rain";
     if (code === 45 || code === 48) return "fog";
     if (code === 2 || code === 3) return "clouds";
     return isDay ? "sun" : "stars";

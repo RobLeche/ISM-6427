@@ -38,7 +38,7 @@ async function loadWeather({ name, latitude, longitude }) {
     latitude,
     longitude,
     current: "temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,is_day",
-    hourly: "temperature_2m,weather_code,is_day",
+    hourly: "temperature_2m,weather_code,is_day,precipitation_probability",
     daily: "weather_code,temperature_2m_max,temperature_2m_min,uv_index_max",
     temperature_unit: "fahrenheit",
     wind_speed_unit: "mph",
@@ -119,14 +119,44 @@ function alertCard(alert) {
   return card;
 }
 
+const isStorm = (code) => code >= 95;
+const isSnow = (code) => (code >= 71 && code <= 77) || code === 85 || code === 86;
+const isRain = (code) => (code >= 51 && code <= 67) || (code >= 80 && code <= 82);
+
+// Background shows rain/snow when it's falling now or expected within the next few hours
+// (forecast says so, or the chance of precipitation is 50%+). Storm beats snow beats rain.
+const LOOKAHEAD_HOURS = 3;
+
+function backgroundWeather(current, hourly, start) {
+  const codes = [current.weather_code];
+  let likely = false;
+  let cold = current.temperature_2m <= 34;
+  for (let i = start; i < start + LOOKAHEAD_HOURS && i < hourly.time.length; i++) {
+    codes.push(hourly.weather_code[i]);
+    if ((hourly.precipitation_probability?.[i] ?? 0) >= 50) likely = true;
+    if (hourly.temperature_2m[i] <= 34) cold = true;
+  }
+
+  let code = current.weather_code;
+  let kind = null;
+  if (codes.some(isStorm)) [code, kind] = [95, "Storms"];
+  else if (codes.some(isSnow) || (likely && cold)) [code, kind] = [73, "Snow"];
+  else if (codes.some(isRain) || likely) [code, kind] = [63, "Rain"];
+
+  const happeningNow = kind && (isStorm(current.weather_code) || isSnow(current.weather_code) || isRain(current.weather_code));
+  return { code, expected: kind && !happeningNow ? `${kind} expected soon` : null };
+}
+
 function render(name, data) {
   const { current, hourly, daily } = data;
   const now = describe(current.weather_code, current.is_day);
+  const start = Math.max(0, hourly.time.findIndex((t) => t >= current.time.slice(0, 13)));
+  const bg = backgroundWeather(current, hourly, start);
 
-  WeatherFX.set(current.weather_code, current.is_day);
+  WeatherFX.set(bg.code, current.is_day);
   $("place").textContent = name;
   $("temp").textContent = `${Math.round(current.temperature_2m)}°`;
-  $("condition").textContent = now.label;
+  $("condition").textContent = bg.expected ? `${now.label} · ${bg.expected}` : now.label;
   $("hilo").textContent = `H:${Math.round(daily.temperature_2m_max[0])}°  L:${Math.round(daily.temperature_2m_min[0])}°`;
   $("feels").textContent = `${Math.round(current.apparent_temperature)}°`;
   $("humidity").textContent = `${current.relative_humidity_2m}%`;
@@ -134,7 +164,6 @@ function render(name, data) {
   $("uv").textContent = Math.round(daily.uv_index_max[0]);
 
   // Next 24 hours, starting from the current hour
-  const start = Math.max(0, hourly.time.findIndex((t) => t >= current.time.slice(0, 13)));
   $("hourly").innerHTML = hourly.time
     .slice(start, start + 24)
     .map((t, i) => {
