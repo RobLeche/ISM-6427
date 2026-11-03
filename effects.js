@@ -59,25 +59,68 @@ const WeatherFX = (() => {
     gctx.drawImage(dropSprite, d.x - size / 2, d.y - (size * stretch) / 2, size, size * stretch);
   }
 
-  // Pre-rendered cloud: overlapping puffs, white on top, shaded underneath
+  // Pre-rendered cumulus cloud: billows piled into a dome with a flat base,
+  // small billows on the upper edges for texture, lit from above and shaded underneath
   function makeCloud(scale) {
-    const cw = 320 * scale;
-    const ch = 160 * scale;
+    const cw = Math.round(420 * scale);
+    const ch = Math.round(260 * scale);
     const s = document.createElement("canvas");
     s.width = cw;
     s.height = ch;
     const c = s.getContext("2d");
-    const shade = c.createLinearGradient(0, ch * 0.2, 0, ch);
-    shade.addColorStop(0, "rgba(255,255,255,1)");
-    shade.addColorStop(1, "rgba(165,180,205,1)");
-    c.fillStyle = shade;
-    c.filter = `blur(${3 * scale}px)`;
-    const puffs = [[0.3, 0.62, 0.2], [0.5, 0.45, 0.27], [0.7, 0.6, 0.2], [0.42, 0.68, 0.18], [0.6, 0.7, 0.18], [0.22, 0.72, 0.13], [0.8, 0.72, 0.13]];
-    for (const [px, py, pr] of puffs) {
-      c.beginPath();
-      c.arc(px * cw + rand(-6, 6) * scale, py * ch, pr * cw * rand(0.9, 1.1), 0, Math.PI * 2);
-      c.fill();
+    const base = ch * 0.8;
+
+    const puffs = [];
+    for (let i = 0; i < 55; i++) {
+      const t = rand(0.1, 0.9);
+      const dome = Math.pow(Math.sin(Math.PI * t), 1.2);
+      const r = cw * rand(0.05, 0.1) * (0.6 + dome * 0.7);
+      puffs.push({ x: t * cw, y: base - r * 0.5 - rand(0, dome * ch * 0.42), r });
     }
+    for (const p of puffs.slice()) {
+      for (let i = 0; i < 2; i++) {
+        const a = rand(-Math.PI * 0.9, -Math.PI * 0.1);
+        const r = p.r * rand(0.3, 0.5);
+        puffs.push({ x: p.x + Math.cos(a) * p.r * 0.8, y: p.y + Math.sin(a) * p.r * 0.8, r });
+      }
+    }
+
+    const softCircle = (x, y, r, rgb, inner, alpha = 1) => {
+      const g = c.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, `rgba(${rgb},${alpha})`);
+      g.addColorStop(inner, `rgba(${rgb},${alpha})`);
+      g.addColorStop(1, `rgba(${rgb},0)`);
+      c.fillStyle = g;
+      c.beginPath();
+      c.arc(x, y, r, 0, Math.PI * 2);
+      c.fill();
+    };
+
+    // One smooth body: same-colored soft puffs blend without visible outlines
+    for (const p of puffs) softCircle(p.x, p.y, p.r, "212,221,236", 0.6);
+
+    // Sunlit tops of each billow, lowest first so upper billows stand out
+    c.globalCompositeOperation = "source-atop";
+    puffs.sort((a, b) => b.y - a.y);
+    for (const p of puffs) softCircle(p.x - p.r * 0.2, p.y - p.r * 0.35, p.r * 0.95, "255,255,255", 0.25, 0.9);
+    c.globalCompositeOperation = "source-over";
+
+    // Flatten and soften the base
+    c.globalCompositeOperation = "destination-out";
+    const cut = c.createLinearGradient(0, base - ch * 0.04, 0, base + ch * 0.06);
+    cut.addColorStop(0, "rgba(0,0,0,0)");
+    cut.addColorStop(1, "rgba(0,0,0,1)");
+    c.fillStyle = cut;
+    c.fillRect(0, base - ch * 0.04, cw, ch);
+
+    // Shadowed underside
+    c.globalCompositeOperation = "source-atop";
+    const under = c.createLinearGradient(0, base - ch * 0.5, 0, base);
+    under.addColorStop(0, "rgba(120,135,165,0)");
+    under.addColorStop(1, "rgba(120,135,165,0.55)");
+    c.fillStyle = under;
+    c.fillRect(0, 0, cw, ch);
+    c.globalCompositeOperation = "source-over";
     return s;
   }
 

@@ -37,7 +37,7 @@
     radial-gradient(circle at 80% 30%, #1f4e79 0%, transparent 45%),
     linear-gradient(160deg, #0f2027, #203a43, #2c5364);
   --fx-rgb: 255, 255, 255;
-  --fx-cloud-alpha: 0.4;
+  --fx-cloud-alpha: 0.6;
   color-scheme: dark;
 }
 
@@ -58,7 +58,7 @@
       radial-gradient(circle at 80% 30%, #1f4e79 0%, transparent 45%),
       linear-gradient(160deg, #0f2027, #203a43, #2c5364);
     --fx-rgb: 255, 255, 255;
-    --fx-cloud-alpha: 0.4;
+    --fx-cloud-alpha: 0.6;
     color-scheme: dark;
   }
 }
