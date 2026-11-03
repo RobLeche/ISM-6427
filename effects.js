@@ -59,68 +59,40 @@ const WeatherFX = (() => {
     gctx.drawImage(dropSprite, d.x - size / 2, d.y - (size * stretch) / 2, size, size * stretch);
   }
 
-  // Pre-rendered cumulus cloud: billows piled into a dome with a flat base,
-  // small billows on the upper edges for texture, lit from above and shaded underneath
+  // Pre-rendered cartoon cloud (think Andy's wallpaper in Toy Story):
+  // flat white, round scalloped bumps on top, flat bottom
   function makeCloud(scale) {
-    const cw = Math.round(420 * scale);
-    const ch = Math.round(260 * scale);
+    const cw = Math.round(300 * scale);
+    const ch = Math.round(cw * 0.42);
     const s = document.createElement("canvas");
     s.width = cw;
     s.height = ch;
     const c = s.getContext("2d");
-    const base = ch * 0.8;
+    const base = ch * 0.96;
+    const n = Math.floor(rand(4, 7));
+    c.fillStyle = "#fff";
 
-    const puffs = [];
-    for (let i = 0; i < 55; i++) {
-      const t = rand(0.1, 0.9);
-      const dome = Math.pow(Math.sin(Math.PI * t), 1.2);
-      const r = cw * rand(0.05, 0.1) * (0.6 + dome * 0.7);
-      puffs.push({ x: t * cw, y: base - r * 0.5 - rand(0, dome * ch * 0.42), r });
+    // Big overlapping round lobes, tallest in the middle, alternating sizes for the scalloped look
+    const lobes = [];
+    for (let i = 0; i < n; i++) {
+      const t = i / (n - 1);
+      const r = cw * 0.15 * (0.55 + 0.45 * Math.sin(Math.PI * t)) * (i % 2 ? rand(0.82, 0.92) : 1);
+      const x = cw * (0.2 + t * 0.6);
+      lobes.push({ x, r, y: base - r * rand(0.55, 0.75) });
     }
-    for (const p of puffs.slice()) {
-      for (let i = 0; i < 2; i++) {
-        const a = rand(-Math.PI * 0.9, -Math.PI * 0.1);
-        const r = p.r * rand(0.3, 0.5);
-        puffs.push({ x: p.x + Math.cos(a) * p.r * 0.8, y: p.y + Math.sin(a) * p.r * 0.8, r });
-      }
-    }
-
-    const softCircle = (x, y, r, rgb, inner, alpha = 1) => {
-      const g = c.createRadialGradient(x, y, 0, x, y, r);
-      g.addColorStop(0, `rgba(${rgb},${alpha})`);
-      g.addColorStop(inner, `rgba(${rgb},${alpha})`);
-      g.addColorStop(1, `rgba(${rgb},0)`);
-      c.fillStyle = g;
+    for (const l of lobes) {
       c.beginPath();
-      c.arc(x, y, r, 0, Math.PI * 2);
+      c.arc(l.x, l.y, l.r, 0, Math.PI * 2);
       c.fill();
-    };
+    }
 
-    // One smooth body: same-colored soft puffs blend without visible outlines
-    for (const p of puffs) softCircle(p.x, p.y, p.r, "212,221,236", 0.6);
+    // Fill between the lobes down to the base
+    const first = lobes[0];
+    const last = lobes[n - 1];
+    c.fillRect(first.x, base - Math.min(first.r, last.r) * 1.1, last.x - first.x, Math.min(first.r, last.r) * 1.1);
 
-    // Sunlit tops of each billow, lowest first so upper billows stand out
-    c.globalCompositeOperation = "source-atop";
-    puffs.sort((a, b) => b.y - a.y);
-    for (const p of puffs) softCircle(p.x - p.r * 0.2, p.y - p.r * 0.35, p.r * 0.95, "255,255,255", 0.25, 0.9);
-    c.globalCompositeOperation = "source-over";
-
-    // Flatten and soften the base
-    c.globalCompositeOperation = "destination-out";
-    const cut = c.createLinearGradient(0, base - ch * 0.04, 0, base + ch * 0.06);
-    cut.addColorStop(0, "rgba(0,0,0,0)");
-    cut.addColorStop(1, "rgba(0,0,0,1)");
-    c.fillStyle = cut;
-    c.fillRect(0, base - ch * 0.04, cw, ch);
-
-    // Shadowed underside
-    c.globalCompositeOperation = "source-atop";
-    const under = c.createLinearGradient(0, base - ch * 0.5, 0, base);
-    under.addColorStop(0, "rgba(120,135,165,0)");
-    under.addColorStop(1, "rgba(120,135,165,0.55)");
-    c.fillStyle = under;
-    c.fillRect(0, 0, cw, ch);
-    c.globalCompositeOperation = "source-over";
+    // Slice it flat along the base
+    c.clearRect(0, base, cw, ch);
     return s;
   }
 
@@ -257,6 +229,12 @@ const WeatherFX = (() => {
         if (p.y > h + 5) { p.y = -5; p.x = rand(0, w); }
       }
     } else if (scene === "clouds") {
+      // Clear blue sky behind the clouds
+      const sky = ctx.createLinearGradient(0, 0, 0, h);
+      sky.addColorStop(0, style.getPropertyValue("--fx-sky-top").trim() || "#3d8fe0");
+      sky.addColorStop(1, style.getPropertyValue("--fx-sky-bottom").trim() || "#8cc8f7");
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, w, h);
       ctx.globalAlpha = cloudAlpha;
       for (const p of particles) {
         ctx.drawImage(p.img, p.x, p.y);
