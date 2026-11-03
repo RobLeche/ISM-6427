@@ -65,6 +65,7 @@ async function loadAlerts(latitude, longitude) {
   const box = $("alerts");
   box.hidden = true;
   box.replaceChildren();
+  Weatherman.alert("");
 
   try {
     const point = `${latitude.toFixed(4)},${longitude.toFixed(4)}`;
@@ -76,11 +77,12 @@ async function loadAlerts(latitude, longitude) {
     if (request !== alertsRequest || !features?.length) return;
 
     const rank = { Extreme: 0, Severe: 1, Moderate: 2, Minor: 3 };
-    features
+    const alerts = features
       .map((f) => f.properties)
-      .sort((a, b) => (rank[a.severity] ?? 4) - (rank[b.severity] ?? 4))
-      .forEach((a) => box.append(alertCard(a)));
+      .sort((a, b) => (rank[a.severity] ?? 4) - (rank[b.severity] ?? 4));
+    alerts.forEach((a) => box.append(alertCard(a)));
     box.hidden = false;
+    Weatherman.alert(`Heads up! There's a ${alerts[0].event} in effect. Check the alert at the top!`);
   } catch (err) {
     console.warn("Weather alerts unavailable", err);
   }
@@ -157,6 +159,7 @@ function render(name, data) {
   $("place").textContent = name;
   $("temp").textContent = `${Math.round(current.temperature_2m)}°`;
   $("condition").textContent = bg.expected ? `${now.label} · ${bg.expected}` : now.label;
+  Weatherman.report(weathermanLine(name, current, daily, now.label, bg));
   $("hilo").textContent = `H:${Math.round(daily.temperature_2m_max[0])}°  L:${Math.round(daily.temperature_2m_min[0])}°`;
   $("feels").textContent = `${Math.round(current.apparent_temperature)}°`;
   $("humidity").textContent = `${current.relative_humidity_2m}%`;

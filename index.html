@@ -61,7 +61,67 @@
 
   <canvas id="windshield" aria-hidden="true"></canvas>
 
+  <button id="weatherman" class="weatherman" type="button" aria-label="Weatherman: tap to show or hide the forecast">
+    <span id="weatherman-bubble" class="bubble" role="status" aria-live="polite"></span>
+    <svg viewBox="0 0 130 160" aria-hidden="true">
+      <!-- Pointer stick -->
+      <line x1="118" y1="58" x2="128" y2="6" stroke="#6d4c2f" stroke-width="3" stroke-linecap="round" />
+      <!-- Arms -->
+      <path d="M12 96 L2 128" stroke="#ffe94d" stroke-width="5" stroke-linecap="round" fill="none" />
+      <path d="M108 94 Q122 80 118 60" stroke="#ffe94d" stroke-width="5" stroke-linecap="round" fill="none" />
+      <circle cx="118" cy="58" r="5" fill="#ffe94d" stroke="#b8a41f" stroke-width="1.5" />
+      <!-- Legs -->
+      <path d="M42 144 V160 M80 144 V160" stroke="#ffe94d" stroke-width="4" />
+      <!-- Sponge body -->
+      <rect x="12" y="8" width="96" height="104" rx="8" fill="#ffe94d" stroke="#b8a41f" stroke-width="3" />
+      <g fill="#d1bf2c" opacity="0.75">
+        <ellipse cx="25" cy="22" rx="5" ry="7" />
+        <ellipse cx="96" cy="26" rx="4" ry="6" />
+        <ellipse cx="62" cy="16" rx="3" ry="4" />
+        <ellipse cx="22" cy="92" rx="6" ry="5" />
+        <ellipse cx="98" cy="96" rx="5" ry="7" />
+        <ellipse cx="92" cy="72" rx="3" ry="3" />
+      </g>
+      <!-- Eyes -->
+      <g stroke="#333" stroke-width="2" stroke-linecap="round">
+        <path d="M34 32 L30 25 M44 29 L44 22 M54 32 L58 25 M66 32 L62 25 M76 29 L76 22 M86 32 L90 25" />
+        <circle cx="44" cy="46" r="15" fill="#fff" />
+        <circle cx="76" cy="46" r="15" fill="#fff" />
+      </g>
+      <circle cx="46" cy="47" r="7" fill="#2e9be6" />
+      <circle cx="74" cy="47" r="7" fill="#2e9be6" />
+      <circle cx="46" cy="47" r="3.5" fill="#111" />
+      <circle cx="74" cy="47" r="3.5" fill="#111" />
+      <circle cx="48" cy="45" r="1.5" fill="#fff" />
+      <circle cx="76" cy="45" r="1.5" fill="#fff" />
+      <!-- Cheeks and freckles -->
+      <circle cx="28" cy="72" r="7" fill="#f48fb1" opacity="0.6" />
+      <circle cx="92" cy="72" r="7" fill="#f48fb1" opacity="0.6" />
+      <g fill="#c2185b" opacity="0.7">
+        <circle cx="25" cy="70" r="1" /><circle cx="30" cy="72" r="1" /><circle cx="27" cy="75" r="1" />
+        <circle cx="89" cy="70" r="1" /><circle cx="94" cy="72" r="1" /><circle cx="91" cy="75" r="1" />
+      </g>
+      <!-- Nose -->
+      <ellipse cx="60" cy="62" rx="6" ry="5" fill="#ffe33b" stroke="#b8a41f" stroke-width="1.5" />
+      <!-- Smile and buck teeth -->
+      <path d="M32 72 Q60 80 88 72 Q60 104 32 72 Z" fill="#7a1f1f" stroke="#333" stroke-width="2" stroke-linejoin="round" />
+      <rect x="51" y="76" width="8" height="9" rx="1" fill="#fff" stroke="#333" stroke-width="1.2" />
+      <rect x="61" y="76" width="8" height="9" rx="1" fill="#fff" stroke="#333" stroke-width="1.2" />
+      <!-- Shirt, shorts, belt -->
+      <rect x="12" y="108" width="96" height="12" fill="#fff" stroke="#999" stroke-width="1.5" />
+      <rect x="12" y="120" width="96" height="24" fill="#8d5524" stroke="#5d3a1a" stroke-width="2" />
+      <g fill="#222">
+        <rect x="20" y="124" width="10" height="4" /><rect x="36" y="124" width="10" height="4" />
+        <rect x="74" y="124" width="10" height="4" /><rect x="90" y="124" width="10" height="4" />
+      </g>
+      <!-- Collar and tie -->
+      <path d="M46 108 H60 L52 116 Z M60 108 H74 L68 116 Z" fill="#fff" stroke="#888" stroke-width="1.2" />
+      <path d="M57 110 H63 L66 128 L60 135 L54 128 Z" fill="#e53935" stroke="#9e1f1f" stroke-width="1.2" />
+    </svg>
+  </button>
+
   <script src="effects.js"></script>
+  <script src="weatherman.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
