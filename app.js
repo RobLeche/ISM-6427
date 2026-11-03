@@ -33,6 +33,7 @@ function describe(code, isDay = 1) {
 
 async function loadWeather({ name, latitude, longitude }) {
   $("condition").textContent = "Loading…";
+  loadAlerts(latitude, longitude);
   const params = new URLSearchParams({
     latitude,
     longitude,
@@ -53,6 +54,69 @@ async function loadWeather({ name, latitude, longitude }) {
     $("condition").textContent = "Unable to load weather.";
     console.error(err);
   }
+}
+
+// Active warnings from the US National Weather Service (Open-Meteo has no alerts feed).
+// Outside the US the request fails and the section simply stays hidden.
+let alertsRequest = 0;
+
+async function loadAlerts(latitude, longitude) {
+  const request = ++alertsRequest;
+  const box = $("alerts");
+  box.hidden = true;
+  box.replaceChildren();
+
+  try {
+    const point = `${latitude.toFixed(4)},${longitude.toFixed(4)}`;
+    const res = await fetch(`https://api.weather.gov/alerts/active?point=${point}`, {
+      headers: { Accept: "application/geo+json" },
+    });
+    if (!res.ok) return;
+    const { features } = await res.json();
+    if (request !== alertsRequest || !features?.length) return;
+
+    const rank = { Extreme: 0, Severe: 1, Moderate: 2, Minor: 3 };
+    features
+      .map((f) => f.properties)
+      .sort((a, b) => (rank[a.severity] ?? 4) - (rank[b.severity] ?? 4))
+      .forEach((a) => box.append(alertCard(a)));
+    box.hidden = false;
+  } catch (err) {
+    console.warn("Weather alerts unavailable", err);
+  }
+}
+
+function alertCard(alert) {
+  const level = { Extreme: "severe", Severe: "severe", Moderate: "moderate" }[alert.severity] || "minor";
+  const card = document.createElement("details");
+  card.className = `glass alert ${level}`;
+
+  const summary = document.createElement("summary");
+  const title = document.createElement("strong");
+  title.textContent = `⚠️ ${alert.event}`;
+  const until = document.createElement("span");
+  const ends = alert.ends || alert.expires;
+  until.textContent = ends
+    ? `Until ${new Date(ends).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" })}`
+    : "";
+  summary.append(title, until);
+
+  const body = document.createElement("div");
+  body.className = "alert-body";
+  for (const text of [alert.headline, alert.description, alert.instruction]) {
+    if (!text) continue;
+    const p = document.createElement("p");
+    p.textContent = text.replace(/(?<!\n)\n(?!\n)/g, " ");
+    body.append(p);
+  }
+  if (alert.senderName) {
+    const src = document.createElement("small");
+    src.textContent = `Source: ${alert.senderName}`;
+    body.append(src);
+  }
+
+  card.append(summary, body);
+  return card;
 }
 
 function render(name, data) {
