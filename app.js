@@ -1,4 +1,23 @@
-const DEFAULT_LOCATION = { name: "Boca Raton", latitude: 26.3683, longitude: -80.1289 };
+const DEFAULT_LOCATION = { name: "Boca Raton, FL", latitude: 26.3683, longitude: -80.1289 };
+
+const US_STATES = {
+  Alabama: "AL", Alaska: "AK", Arizona: "AZ", Arkansas: "AR", California: "CA", Colorado: "CO",
+  Connecticut: "CT", Delaware: "DE", "District of Columbia": "DC", Florida: "FL", Georgia: "GA",
+  Hawaii: "HI", Idaho: "ID", Illinois: "IL", Indiana: "IN", Iowa: "IA", Kansas: "KS", Kentucky: "KY",
+  Louisiana: "LA", Maine: "ME", Maryland: "MD", Massachusetts: "MA", Michigan: "MI", Minnesota: "MN",
+  Mississippi: "MS", Missouri: "MO", Montana: "MT", Nebraska: "NE", Nevada: "NV", "New Hampshire": "NH",
+  "New Jersey": "NJ", "New Mexico": "NM", "New York": "NY", "North Carolina": "NC", "North Dakota": "ND",
+  Ohio: "OH", Oklahoma: "OK", Oregon: "OR", Pennsylvania: "PA", "Rhode Island": "RI",
+  "South Carolina": "SC", "South Dakota": "SD", Tennessee: "TN", Texas: "TX", Utah: "UT", Vermont: "VT",
+  Virginia: "VA", Washington: "WA", "West Virginia": "WV", Wisconsin: "WI", Wyoming: "WY",
+  "Puerto Rico": "PR",
+};
+
+// "Miami, FL" for US cities, "Paris, FR" elsewhere
+function placeLabel(result) {
+  const region = result.country_code === "US" ? US_STATES[result.admin1] : result.country_code;
+  return region ? `${result.name}, ${region}` : result.name;
+}
 
 const WEATHER_CODES = {
   0: ["Clear", "☀️", "🌙"],
@@ -215,7 +234,7 @@ $("search").addEventListener("submit", async (e) => {
       return;
     }
     const r = results[0];
-    loadWeather({ name: r.name, latitude: r.latitude, longitude: r.longitude });
+    loadWeather({ name: placeLabel(r), latitude: r.latitude, longitude: r.longitude });
     $("query").value = "";
   } catch (err) {
     $("condition").textContent = "Search failed.";
